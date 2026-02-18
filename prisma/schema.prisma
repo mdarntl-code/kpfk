@@ -1,0 +1,86 @@
+// Модель користувача (і ментор, і учень)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Use an environment variable for the database connection string
+}
+
+model User {
+    id                Int       @id @default(autoincrement())
+    email             String    @unique
+    password          String
+    name              String
+    role              Role      @default(LEARNER)
+    
+    // Mentor specific fields
+    bio               String?
+    avatar            String?   // Initials or image URL
+    skill             String?
+    category          String?
+    rate              Float?
+    availability      String[]  @default([])
+    location          String?
+    reviewCount       Int       @default(0)
+    rating            Float     @default(0)
+
+    sessionsAsMentor  Session[] @relation("MentorSessions")
+    sessionsAsLearner Session[] @relation("LearnerSessions")
+    createdAt         DateTime  @default(now())
+}
+
+// Модель сесії (бронювання слоту)
+model Session {
+    id          Int      @id @default(autoincrement())
+    title       String // Наприклад: "Guitar Basics"
+    mentor      User     @relation("MentorSessions", fields: [mentorId], references: [id])
+    mentorId    Int
+    learner     User     @relation("LearnerSessions", fields: [learnerId], references: [id])
+    learnerId   Int
+    scheduledAt DateTime
+    price       Float
+
+    payment  Payment? // Зв'язок 1-до-1 з оплатою
+    feedback Feedback? // Зв'язок 1-до-1 з відгуком
+    status   SessionStatus @default(UPCOMING)
+}
+
+// Модель відгуку
+model Feedback {
+    id        Int      @id @default(autoincrement())
+    rating    Int // від 1 до 5
+    comment   String?
+    session   Session  @relation(fields: [sessionId], references: [id])
+    sessionId Int      @unique
+    createdAt DateTime @default(now())
+}
+
+// Модель оплати
+model Payment {
+    id            Int           @id @default(autoincrement())
+    amount        Float
+    status        PaymentStatus @default(PENDING)
+    session       Session       @relation(fields: [sessionId], references: [id])
+    sessionId     Int           @unique
+    transactionId String?       @unique
+}
+
+enum Role {
+    MENTOR
+    LEARNER
+    ADMIN
+}
+
+enum SessionStatus {
+    UPCOMING
+    COMPLETED
+    CANCELLED
+}
+
+enum PaymentStatus {
+    PENDING
+    COMPLETED
+    FAILED
+}
