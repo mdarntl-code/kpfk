@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db"
 import { getSessions } from "@/actions/session"
 import { DashboardView } from "@/components/dashboard-view"
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   // In a real app, we would get the session/user from auth
   // For this demo, we use the seeded learner

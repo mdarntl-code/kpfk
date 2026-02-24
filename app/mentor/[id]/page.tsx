@@ -3,6 +3,8 @@ import { getFeedbackByMentor } from "@/actions/feedback"
 import { MentorProfileView } from "@/components/mentor-profile-view"
 import { notFound } from "next/navigation"
 
+export const dynamic = 'force-dynamic'
+
 
 export default async function MentorProfilePage({
   params,
