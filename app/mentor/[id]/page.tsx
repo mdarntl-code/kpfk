@@ -1,12 +1,7 @@
-import { getMentorById, getMentors } from "@/actions/user"
+import { getMentorById } from "@/actions/user"
 import { getFeedbackByMentor } from "@/actions/feedback"
 import { MentorProfileView } from "@/components/mentor-profile-view"
 import { notFound } from "next/navigation"
-
-export async function generateStaticParams() {
-  const mentors = await getMentors()
-  return mentors.map((m) => ({ id: m.id.toString() }))
-}
 
 
 export default async function MentorProfilePage({
