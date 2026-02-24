@@ -36,6 +36,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build with Next.js
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
         # Disable prisma setup if it needs DB during build, but Next export should work without DB
         # If your build fails and you need database, you can run prisma generate here
         run: |
