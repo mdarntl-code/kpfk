@@ -20,6 +20,8 @@ import { Separator } from "@/components/ui/separator"
 import { categories } from "@/lib/data"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { updateMentorProfile } from "@/actions/user"
+import { getSession } from "@/actions/auth"
 
 const timeSlots = [
   "6:00 AM", "6:30 AM", "7:00 AM", "7:30 AM",
@@ -38,8 +40,11 @@ export default function CreateProfilePage() {
   const [category, setCategory] = useState("")
   const [bio, setBio] = useState("")
   const [location, setLocation] = useState("")
+  const [rate, setRate] = useState("15")
+  const [videoPresentation, setVideoPresentation] = useState("")
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const toggleSlot = (slot: string) => {
     setSelectedSlots((prev) =>
@@ -47,9 +52,9 @@ export default function CreateProfilePage() {
     )
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !skill || !category || !bio || !location) {
+    if (!name || !skill || !category || !bio || !location || !rate) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -57,10 +62,30 @@ export default function CreateProfilePage() {
       toast.error("Please select at least one available time slot")
       return
     }
-    setSubmitted(true)
-    toast.success("Profile created!", {
-      description: "Your mentor profile is now live.",
+
+    setIsSubmitting(true)
+
+    const session = await getSession();
+    if (!session) {
+      toast.error("You must be logged in to create a profile");
+      setIsSubmitting(false)
+      return;
+    }
+
+    const result = await updateMentorProfile(session.id, {
+      name, skill, category, bio, location, rate, videoPresentation, availability: selectedSlots
     })
+
+    setIsSubmitting(false)
+
+    if (result.success) {
+      setSubmitted(true)
+      toast.success("Profile created!", {
+        description: "Your mentor profile is now live.",
+      })
+    } else {
+      toast.error(result.error || "An error occurred")
+    }
   }
 
   if (submitted) {
@@ -156,6 +181,16 @@ export default function CreateProfilePage() {
                   {bio.length}/300 characters
                 </p>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="videoPresentation">Video Presentation Link (Optional)</Label>
+                <Input
+                  id="videoPresentation"
+                  placeholder="e.g., https://youtube.com/watch?v=..."
+                  value={videoPresentation}
+                  onChange={(e) => setVideoPresentation(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -200,14 +235,17 @@ export default function CreateProfilePage() {
                 </Select>
               </div>
               <Separator />
-              <div className="rounded-lg border border-border bg-muted/50 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Session Rate</span>
-                  <span className="text-lg font-bold text-primary">$15.00</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Fixed rate for all 30-minute sessions on SkillHub.
-                </p>
+              <div className="space-y-2">
+                <Label htmlFor="rate">Session Rate ($ per 30 mins)</Label>
+                <Input
+                  id="rate"
+                  type="number"
+                  min="5"
+                  placeholder="15"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                  className="bg-background"
+                />
               </div>
             </CardContent>
           </Card>
@@ -255,8 +293,8 @@ export default function CreateProfilePage() {
             </CardContent>
           </Card>
 
-          <Button type="submit" size="lg" className="w-full">
-            Create Mentor Profile
+          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Create Mentor Profile"}
           </Button>
         </form>
       </main>

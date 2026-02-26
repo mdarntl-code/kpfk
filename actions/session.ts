@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { SessionStatus, PaymentStatus } from "@prisma/client"
+import { parse } from "date-fns"
 
 export async function createSession(data: {
     mentorId: number,
@@ -12,7 +13,9 @@ export async function createSession(data: {
     time: string,
     price: number
 }) {
-    const scheduledAt = new Date(`${data.date}T${data.time}:00`)
+    // Parse '2026-02-28' and '1:30 PM' into a valid Date object using date-fns
+    const dateTimeString = `${data.date} ${data.time}`
+    const scheduledAt = parse(dateTimeString, 'yyyy-MM-dd h:mm a', new Date())
 
     try {
         const session = await prisma.session.create({
@@ -22,7 +25,7 @@ export async function createSession(data: {
                 title: data.title,
                 scheduledAt: scheduledAt,
                 price: data.price,
-                status: SessionStatus.UPCOMING,
+                status: SessionStatus.PENDING,
                 payment: {
                     create: {
                         amount: data.price,
@@ -55,7 +58,8 @@ export async function getSessions(userId: number, role: 'mentor' | 'learner') {
             include: {
                 mentor: true,
                 learner: true,
-                payment: true
+                payment: true,
+                feedback: true
             },
             orderBy: {
                 scheduledAt: 'desc'
@@ -81,6 +85,48 @@ export async function cancelSession(sessionId: number) {
     } catch (error) {
         console.error("Error cancelling session:", error)
         return { success: false, error: "Failed to cancel session" }
+    }
+}
+
+export async function updateSessionStatus(sessionId: number, status: SessionStatus) {
+    try {
+        const session = await prisma.session.findUnique({
+            where: { id: sessionId },
+            include: { payment: true }
+        })
+
+        if (!session) return { success: false, error: "Session not found" }
+
+        const updatedSession = await prisma.session.update({
+            where: { id: sessionId },
+            data: {
+                status: status,
+                ...(status === SessionStatus.COMPLETED && session.payment ? {
+                    payment: {
+                        update: { status: PaymentStatus.COMPLETED }
+                    }
+                } : {}),
+                ...(status === SessionStatus.CANCELLED && session.payment ? {
+                    payment: {
+                        update: { status: PaymentStatus.FAILED }
+                    }
+                } : {})
+            }
+        })
+
+        // If newly marked as completed, credit the mentor's balance
+        if (status === SessionStatus.COMPLETED && session.status !== SessionStatus.COMPLETED) {
+            await prisma.user.update({
+                where: { id: session.mentorId },
+                data: { balance: { increment: session.price } }
+            })
+        }
+
+        revalidatePath('/dashboard')
+        return { success: true, session: updatedSession }
+    } catch (error) {
+        console.error("Error updating session status:", error)
+        return { success: false, error: "Failed to update session status" }
     }
 }
 

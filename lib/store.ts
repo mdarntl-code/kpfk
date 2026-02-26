@@ -1,6 +1,5 @@
 import { create } from "zustand"
 import type { Session, Review } from "./data"
-import { sessions as initialSessions, reviews as initialReviews } from "./data"
 
 interface AppState {
   sessions: Session[]
@@ -13,8 +12,8 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  sessions: initialSessions,
-  reviews: initialReviews,
+  sessions: [],
+  reviews: [],
   userRole: "learner",
   addSession: (session) =>
     set((state) => ({ sessions: [...state.sessions, session] })),

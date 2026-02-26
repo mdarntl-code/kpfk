@@ -1,5 +1,6 @@
 import { getMentorById } from "@/actions/user"
 import { getFeedbackByMentor } from "@/actions/feedback"
+import { getSession } from "@/actions/auth"
 import { MentorProfileView } from "@/components/mentor-profile-view"
 import { notFound } from "next/navigation"
 
@@ -49,5 +50,8 @@ export default async function MentorProfilePage({
     availability: mentor.availability || []
   }
 
-  return <MentorProfileView mentor={formattedMentor} reviews={reviews} />
+  const session = await getSession()
+  const learnerId = session ? session.id : undefined
+
+  return <MentorProfileView mentor={formattedMentor} reviews={reviews} learnerId={learnerId} />
 }

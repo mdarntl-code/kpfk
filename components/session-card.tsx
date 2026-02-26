@@ -1,7 +1,7 @@
 "use client"
 
-import { format } from "date-fns"
-import { CalendarDays, Clock, X } from "lucide-react"
+import { format, parse } from "date-fns"
+import { CalendarDays, Clock, X, CheckCircle2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -17,29 +17,57 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { useAppStore } from "@/lib/store"
 import type { Session } from "@/lib/data"
+import { updateSessionStatus } from "@/actions/session"
+import { SessionStatus } from "@prisma/client"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
+import { ReviewForm } from "@/components/review-form"
+import { useState } from "react"
 
 interface SessionCardProps {
   session: Session
+  userRole?: "learner" | "mentor"
 }
 
 const statusStyles: Record<string, string> = {
-  upcoming: "bg-primary/10 text-primary border-primary/20",
+  pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  confirmed: "bg-primary/10 text-primary border-primary/20",
   completed: "bg-success/10 text-success border-success/20",
   cancelled: "bg-destructive/10 text-destructive border-destructive/20",
 }
 
-export function SessionCard({ session }: SessionCardProps) {
-  const { cancelSession } = useAppStore()
+export function SessionCard({ session, userRole }: SessionCardProps) {
+  const [isReviewOpen, setIsReviewOpen] = useState(false)
 
-  const handleCancel = () => {
-    cancelSession(session.id)
-    toast.success("Session cancelled", {
-      description: `Your session with ${session.mentorName} has been cancelled.`,
-    })
+  const handleCancel = async () => {
+    const result = await updateSessionStatus(Number(session.id), SessionStatus.CANCELLED)
+    if (result.success) {
+      toast.success("Session cancelled", {
+        description: `Your session with ${session.mentorName} has been cancelled.`,
+      })
+    } else {
+      toast.error("Failed to cancel session")
+    }
+  }
+
+  const handleConfirm = async () => {
+    const result = await updateSessionStatus(Number(session.id), SessionStatus.CONFIRMED)
+    if (result.success) {
+      toast.success("Session confirmed")
+    } else {
+      toast.error("Failed to confirm session")
+    }
+  }
+
+  const handleComplete = async () => {
+    const result = await updateSessionStatus(Number(session.id), SessionStatus.COMPLETED)
+    if (result.success) {
+      toast.success("Session marked as completed")
+    } else {
+      toast.error("Failed to complete session")
+    }
   }
 
   return (
@@ -72,7 +100,7 @@ export function SessionCard({ session }: SessionCardProps) {
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" />
-                {format(new Date(session.date), "MMM d, yyyy")}
+                {format(parse(session.date, 'yyyy-MM-dd', new Date()), "MMM d, yyyy")}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -81,8 +109,30 @@ export function SessionCard({ session }: SessionCardProps) {
             </div>
           </div>
         </div>
-        {session.status === "upcoming" && (
-          <div className="mt-4 flex justify-end">
+        {(session.status === "pending" || session.status === "confirmed") && (
+          <div className="mt-4 flex flex-wrap gap-2 justify-end">
+            {(userRole === "mentor" && session.status === "pending") && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleConfirm}
+                className="gap-1.5 border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Confirm
+              </Button>
+            )}
+            {(session.status === "confirmed") && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleComplete}
+                className="gap-1.5 border-success/30 text-success hover:bg-success/5 hover:text-success"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Mark Completed
+              </Button>
+            )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -99,7 +149,7 @@ export function SessionCard({ session }: SessionCardProps) {
                   <AlertDialogTitle>Cancel this session?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will cancel your session with {session.mentorName} on{" "}
-                    {format(new Date(session.date), "MMMM d")} at {session.time}.
+                    {format(parse(session.date, 'yyyy-MM-dd', new Date()), "MMMM d")} at {session.time}.
                     This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -107,13 +157,36 @@ export function SessionCard({ session }: SessionCardProps) {
                   <AlertDialogCancel>Keep Session</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleCancel}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-destructive text-white hover:bg-destructive/90"
                   >
                     Yes, Cancel
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+          </div>
+        )}
+
+        {(session.status === "completed" && !session.isReviewed) && (
+          <div className="mt-4 flex flex-wrap gap-2 justify-end">
+            <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  size="sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Leave Feedback
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogTitle className="sr-only">Leave Feedback</DialogTitle>
+                <ReviewForm
+                  sessionId={Number(session.id)}
+                  mentorName={session.mentorName}
+                  onSuccess={() => setIsReviewOpen(false)}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </CardContent>

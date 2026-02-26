@@ -18,9 +18,11 @@ model User {
     // Mentor specific fields
     bio               String?
     avatar            String?   // Initials or image URL
+    videoPresentation String?   // Link to video presentation
     skill             String?
     category          String?
-    rate              Float?
+    rate              Float?    // Price per 30 minutes
+    balance           Float     @default(0) // Wallet balance
     availability      String[]  @default([])
     location          String?
     reviewCount       Int       @default(0)
@@ -28,6 +30,7 @@ model User {
 
     sessionsAsMentor  Session[] @relation("MentorSessions")
     sessionsAsLearner Session[] @relation("LearnerSessions")
+    withdrawals       WithdrawalRequest[]
     createdAt         DateTime  @default(now())
 }
 
@@ -44,7 +47,7 @@ model Session {
 
     payment  Payment? // Зв'язок 1-до-1 з оплатою
     feedback Feedback? // Зв'язок 1-до-1 з відгуком
-    status   SessionStatus @default(UPCOMING)
+    status   SessionStatus @default(PENDING)
 }
 
 // Модель відгуку
@@ -67,14 +70,26 @@ model Payment {
     transactionId String?       @unique
 }
 
+// Запит на вивід коштів
+model WithdrawalRequest {
+    id        Int              @id @default(autoincrement())
+    user      User             @relation(fields: [userId], references: [id])
+    userId    Int
+    amount    Float
+    status    WithdrawalStatus @default(PENDING)
+    createdAt DateTime         @default(now())
+}
+
 enum Role {
     MENTOR
     LEARNER
     ADMIN
+    SUPERADMIN
 }
 
 enum SessionStatus {
-    UPCOMING
+    PENDING
+    CONFIRMED
     COMPLETED
     CANCELLED
 }
@@ -83,4 +98,10 @@ enum PaymentStatus {
     PENDING
     COMPLETED
     FAILED
+}
+
+enum WithdrawalStatus {
+    PENDING
+    COMPLETED
+    REJECTED
 }

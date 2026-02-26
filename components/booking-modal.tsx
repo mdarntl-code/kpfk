@@ -22,13 +22,14 @@ import { toast } from "sonner"
 
 interface BookingModalProps {
   mentor: Mentor
+  learnerId: number
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 type Step = "date" | "time" | "checkout" | "success"
 
-export function BookingModal({ mentor, open, onOpenChange }: BookingModalProps) {
+export function BookingModal({ mentor, learnerId, open, onOpenChange }: BookingModalProps) {
   const [step, setStep] = useState<Step>("date")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -46,6 +47,14 @@ export function BookingModal({ mentor, open, onOpenChange }: BookingModalProps) 
   }
 
   const handlePayment = async () => {
+    if (!learnerId || learnerId === 0) {
+      toast.error("Authentication required", {
+        description: "Please log in to book a session."
+      })
+      window.location.href = '/login'
+      return
+    }
+
     setIsProcessing(true)
 
     // In a real app, strict date/time handling is needed.
@@ -56,7 +65,7 @@ export function BookingModal({ mentor, open, onOpenChange }: BookingModalProps) 
 
     const result = await createSession({
       mentorId: typeof mentor.id === 'string' ? parseInt(mentor.id) : mentor.id,
-      learnerId: 1, // Hardcoded for demo (matches seeded learner)
+      learnerId: learnerId,
       title: mentor.skill,
       date: dateStr,
       time: selectedTime,
@@ -106,7 +115,7 @@ export function BookingModal({ mentor, open, onOpenChange }: BookingModalProps) 
               <p className="text-xs text-muted-foreground">{mentor.skill}</p>
             </div>
             <Badge className="ml-auto bg-primary text-primary-foreground">
-              ${mentor.rate}
+              {mentor.rate} credits
             </Badge>
           </div>
         </div>
@@ -196,7 +205,7 @@ export function BookingModal({ mentor, open, onOpenChange }: BookingModalProps) 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">Total</span>
                   <span className="text-lg font-bold text-primary">
-                    ${mentor.rate}.00
+                    {mentor.rate} credits
                   </span>
                 </div>
               </div>
@@ -219,7 +228,7 @@ export function BookingModal({ mentor, open, onOpenChange }: BookingModalProps) 
                       Processing...
                     </>
                   ) : (
-                    `Pay $${mentor.rate}.00`
+                    `Pay ${mentor.rate} credits`
                   )}
                 </Button>
               </div>

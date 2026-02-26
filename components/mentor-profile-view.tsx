@@ -18,16 +18,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StarRating } from "@/components/star-rating"
 import { ReviewList } from "@/components/review-list"
-import { ReviewForm } from "@/components/review-form"
 import { BookingModal } from "@/components/booking-modal"
 import type { Mentor, Review } from "@/lib/data"
 
 interface MentorProfileViewProps {
     mentor: Mentor
     reviews: Review[]
+    learnerId?: number
 }
 
-export function MentorProfileView({ mentor, reviews }: MentorProfileViewProps) {
+export function MentorProfileView({ mentor, reviews, learnerId }: MentorProfileViewProps) {
     const [bookingOpen, setBookingOpen] = useState(false)
 
     // Filter reviews for this mentor (though passed reviews should already be filtered)
@@ -91,6 +91,18 @@ export function MentorProfileView({ mentor, reviews }: MentorProfileViewProps) {
                                 <p className="mt-2 leading-relaxed text-foreground/80">
                                     {mentor.bio}
                                 </p>
+                                {/* @ts-ignore */}
+                                {mentor.videoPresentation && (
+                                    <div className="mt-6">
+                                        <h3 className="text-sm font-semibold text-foreground mb-3">Video Presentation</h3>
+                                        <Button variant="outline" asChild className="w-full sm:w-auto">
+                                            {/* @ts-ignore */}
+                                            <a href={mentor.videoPresentation} target="_blank" rel="noopener noreferrer">
+                                                Watch Video
+                                            </a>
+                                        </Button>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -108,7 +120,6 @@ export function MentorProfileView({ mentor, reviews }: MentorProfileViewProps) {
 
                             <TabsContent value="reviews" className="space-y-4">
                                 <ReviewList reviews={mentorReviews} />
-                                <ReviewForm mentor={mentor} />
                             </TabsContent>
 
                             <TabsContent value="availability">
@@ -144,7 +155,7 @@ export function MentorProfileView({ mentor, reviews }: MentorProfileViewProps) {
                             <CardContent className="p-6 space-y-5">
                                 <div className="text-center">
                                     <span className="text-3xl font-bold text-foreground">
-                                        ${mentor.rate}
+                                        {mentor.rate} credits
                                     </span>
                                     <span className="text-sm text-muted-foreground">/session</span>
                                 </div>
@@ -172,7 +183,7 @@ export function MentorProfileView({ mentor, reviews }: MentorProfileViewProps) {
                                     size="lg"
                                     onClick={() => setBookingOpen(true)}
                                 >
-                                    Book for ${mentor.rate}
+                                    Book for {mentor.rate} credits
                                 </Button>
                                 <p className="text-center text-xs text-muted-foreground">
                                     Free cancellation up to 24 hours before
@@ -185,6 +196,7 @@ export function MentorProfileView({ mentor, reviews }: MentorProfileViewProps) {
 
             <BookingModal
                 mentor={mentor}
+                learnerId={learnerId || 0}
                 open={bookingOpen}
                 onOpenChange={setBookingOpen}
             />

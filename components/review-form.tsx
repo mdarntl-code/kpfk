@@ -13,13 +13,14 @@ import { getLastSession } from "@/actions/session"
 import type { Mentor } from "@/lib/data"
 
 interface ReviewFormProps {
-  mentor: Mentor
+  sessionId: number
+  mentorName: string
+  onSuccess?: () => void
 }
 
-export function ReviewForm({ mentor }: ReviewFormProps) {
+export function ReviewForm({ sessionId, mentorName, onSuccess }: ReviewFormProps) {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState("")
-  // const { addReview } = useAppStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,19 +33,8 @@ export function ReviewForm({ mentor }: ReviewFormProps) {
       return
     }
 
-    // Find a session to attach this review to
-    // Hardcoded learnerId = 1 for demo
-    const session = await getLastSession(typeof mentor.id === 'string' ? parseInt(mentor.id) : mentor.id, 1)
-
-    if (!session) {
-      toast.error("No session found", {
-        description: "You need to book a session with this mentor before leaving a review."
-      })
-      return
-    }
-
     const result = await createFeedback({
-      sessionId: session.id,
+      sessionId: sessionId,
       rating,
       comment
     })
@@ -55,6 +45,7 @@ export function ReviewForm({ mentor }: ReviewFormProps) {
       toast.success("Review submitted!", {
         description: "Thank you for your feedback.",
       })
+      if (onSuccess) onSuccess();
     } else {
       toast.error("Submission failed", {
         description: "Could not submit review. You might have already reviewed this session."
@@ -85,7 +76,7 @@ export function ReviewForm({ mentor }: ReviewFormProps) {
               Your Experience
             </label>
             <Textarea
-              placeholder={`Share your experience with ${mentor.name}...`}
+              placeholder={`Share your experience with ${mentorName}...`}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}

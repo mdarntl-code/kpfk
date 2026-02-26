@@ -33,50 +33,52 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center px-4 py-12">
-            <Card className="w-full max-w-sm">
+        <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4 py-12">
+            <div className="absolute inset-0 z-0 bg-background/80 backdrop-blur-3xl" />
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+            <Card className="z-10 w-full max-w-sm border-border/50 bg-card/60 shadow-lg backdrop-blur-xl sm:rounded-3xl p-2">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Create an account</CardTitle>
-                    <CardDescription>
-                        Enter your email below to create your account.
+                    <CardTitle className="text-2xl font-semibold tracking-tight">Create an account</CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                        Enter your details to get started
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={onSubmit}>
                     <CardContent className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" type="text" placeholder="John Doe" required />
+                            <Label htmlFor="name" className="text-xs font-semibold uppercase text-muted-foreground">Name</Label>
+                            <Input id="name" name="name" type="text" placeholder="John Doe" className="h-11 bg-background/50 text-base shadow-none sm:text-sm" required />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                            <Label htmlFor="email" className="text-xs font-semibold uppercase text-muted-foreground">Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="m@example.com" className="h-11 bg-background/50 text-base shadow-none sm:text-sm" required />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" name="password" type="password" required />
+                            <Label htmlFor="password" className="text-xs font-semibold uppercase text-muted-foreground">Password</Label>
+                            <Input id="password" name="password" type="password" className="h-11 bg-background/50 text-base shadow-none sm:text-sm" required />
                         </div>
-                        <div className="grid gap-2">
-                            <Label>I want to join as a:</Label>
-                            <RadioGroup defaultValue="LEARNER" name="role" className="flex gap-4">
-                                <div className="flex items-center space-x-2">
+                        <div className="grid gap-3 pt-2">
+                            <Label className="text-xs font-semibold uppercase text-muted-foreground">I want to join as a:</Label>
+                            <RadioGroup defaultValue="LEARNER" name="role" className="grid grid-cols-2 gap-4">
+                                <div className="flex h-11 items-center space-x-2 rounded-xl border border-border/50 bg-background/50 px-3 transition-colors hover:bg-muted/50">
                                     <RadioGroupItem value="LEARNER" id="learner" />
-                                    <Label htmlFor="learner">Learner</Label>
+                                    <Label htmlFor="learner" className="cursor-pointer flex-1 font-medium">Learner</Label>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex h-11 items-center space-x-2 rounded-xl border border-border/50 bg-background/50 px-3 transition-colors hover:bg-muted/50">
                                     <RadioGroupItem value="MENTOR" id="mentor" />
-                                    <Label htmlFor="mentor">Mentor</Label>
+                                    <Label htmlFor="mentor" className="cursor-pointer flex-1 font-medium">Mentor</Label>
                                 </div>
                             </RadioGroup>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4">
-                        <Button className="w-full" disabled={loading}>
-                            {loading ? "Creating account..." : "Sign up"}
+                    <CardFooter className="flex flex-col gap-4 mt-2">
+                        <Button className="h-11 w-full rounded-xl font-medium" disabled={loading}>
+                            {loading ? "Creating account..." : "Continue"}
                         </Button>
-                        <div className="text-center text-sm">
+                        <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{" "}
-                            <Link href="/login" className="underline">
-                                Login
+                            <Link href="/login" className="font-medium text-foreground hover:underline">
+                                Log in
                             </Link>
                         </div>
                     </CardFooter>

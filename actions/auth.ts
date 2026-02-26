@@ -90,5 +90,33 @@ export async function loginUser(formData: FormData) {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) return { success: false, error: "Invalid credentials" };
 
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    cookieStore.set('session', JSON.stringify({ id: user.id, name: user.name, role: user.role }), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/'
+    });
+
     return { success: true, user: { id: user.id, name: user.name, role: user.role } };
+}
+
+export async function logoutUser() {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+    return { success: true };
+}
+
+export async function getSession() {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session');
+    if (!sessionCookie?.value) return null;
+    try {
+        return JSON.parse(sessionCookie.value) as { id: number, name: string, role: string };
+    } catch (e) {
+        return null;
+    }
 }

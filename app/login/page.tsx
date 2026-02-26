@@ -32,32 +32,39 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center px-4 py-12">
-            <Card className="w-full max-w-sm">
+        <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4 py-12">
+            <div className="absolute inset-0 z-0 bg-background/80 backdrop-blur-3xl" />
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+            <Card className="z-10 w-full max-w-sm border-border/50 bg-card/60 shadow-lg backdrop-blur-xl sm:rounded-3xl p-2">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Login</CardTitle>
-                    <CardDescription>
-                        Enter your email below to login to your account.
+                    <CardTitle className="text-2xl font-semibold tracking-tight">Welcome back</CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                        Enter your credentials to access your account
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={onSubmit}>
                     <CardContent className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                            <Label htmlFor="email" className="text-xs font-semibold uppercase text-muted-foreground">Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="m@example.com" className="h-11 bg-background/50 text-base shadow-none sm:text-sm" required />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" name="password" type="password" required />
+                            <div className="flex items-center">
+                                <Label htmlFor="password" className="text-xs font-semibold uppercase text-muted-foreground">Password</Label>
+                                <Link href="/forgot-password" className="ml-auto inline-block text-xs font-medium text-primary hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
+                            <Input id="password" name="password" type="password" className="h-11 bg-background/50 text-base shadow-none sm:text-sm" required />
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                        <Button className="w-full" disabled={loading}>
+                        <Button className="h-11 w-full rounded-xl font-medium" disabled={loading}>
                             {loading ? "Logging in..." : "Sign in"}
                         </Button>
-                        <div className="text-center text-sm">
+                        <div className="text-center text-sm text-muted-foreground">
                             Don&apos;t have an account?{" "}
-                            <Link href="/register" className="underline">
+                            <Link href="/register" className="font-medium text-foreground hover:underline">
                                 Sign up
                             </Link>
                         </div>

@@ -6,7 +6,8 @@ import { BookOpen, LayoutDashboard, Search, UserPlus, Menu, X } from "lucide-rea
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { getSession, logoutUser } from "@/actions/auth"
 
 const navItems = [
   { href: "/", label: "Discover", icon: Search },
@@ -18,6 +19,11 @@ export function SiteHeader() {
   const pathname = usePathname()
   const { userRole, setUserRole } = useAppStore()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [user, setUser] = useState<{ id: number; name: string; role: string } | null>(null)
+
+  useEffect(() => {
+    getSession().then(res => setUser(res))
+  }, [pathname])
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
@@ -54,38 +60,52 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
-            <button
-              onClick={() => setUserRole("learner")}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                userRole === "learner"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Learner
-            </button>
-            <button
-              onClick={() => setUserRole("mentor")}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                userRole === "mentor"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Mentor
-            </button>
-          </div>
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Log in
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm">Sign up</Button>
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-foreground mr-2">Hello, {user.name}</span>
+              <Button variant="ghost" size="sm" onClick={async () => {
+                await logoutUser();
+                window.location.href = '/';
+              }}>
+                Log out
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
+                <button
+                  onClick={() => setUserRole("learner")}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    userRole === "learner"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Learner
+                </button>
+                <button
+                  onClick={() => setUserRole("mentor")}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    userRole === "mentor"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Mentor
+                </button>
+              </div>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  Log in
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm">Sign up</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         <Button
@@ -122,30 +142,44 @@ export function SiteHeader() {
               )
             })}
           </nav>
-          <div className="mt-4 flex items-center rounded-lg border border-border bg-muted p-0.5">
-            <button
-              onClick={() => setUserRole("learner")}
-              className={cn(
-                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                userRole === "learner"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Learner
-            </button>
-            <button
-              onClick={() => setUserRole("mentor")}
-              className={cn(
-                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                userRole === "mentor"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Mentor
-            </button>
-          </div>
+          {user ? (
+            <div className="mt-4 flex flex-col gap-2">
+              <div className="text-sm font-medium text-foreground px-4 py-2 bg-muted/50 rounded-lg">
+                Logged in as {user.name}
+              </div>
+              <Button variant="outline" className="w-full text-destructive" onClick={async () => {
+                await logoutUser();
+                window.location.href = '/';
+              }}>
+                Log out
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center rounded-lg border border-border bg-muted p-0.5">
+              <button
+                onClick={() => setUserRole("learner")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                  userRole === "learner"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Learner
+              </button>
+              <button
+                onClick={() => setUserRole("mentor")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                  userRole === "mentor"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Mentor
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>
