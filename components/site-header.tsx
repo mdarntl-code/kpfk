@@ -72,7 +72,7 @@ export function SiteHeader() {
             </div>
           ) : (
             <>
-              <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
+              {/* <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
                 <button
                   onClick={() => setUserRole("learner")}
                   className={cn(
@@ -95,7 +95,7 @@ export function SiteHeader() {
                 >
                   Mentor
                 </button>
-              </div>
+              </div> */}
               <Link href="/login">
                 <Button variant="ghost" size="sm">
                   Log in
