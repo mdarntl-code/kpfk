@@ -58,7 +58,7 @@ export default function LoginPage() {
                             <Input id="password" name="password" type="password" className="h-11 bg-background/50 text-base shadow-none sm:text-sm" required />
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4">
+                    <CardFooter className="flex flex-col gap-4 mt-7">
                         <Button className="h-11 w-full rounded-xl font-medium" disabled={loading}>
                             {loading ? "Logging in..." : "Sign in"}
                         </Button>
