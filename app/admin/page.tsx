@@ -59,23 +59,6 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 <div className="mt-12">
-                    <h2 className="text-xl font-semibold mb-4 tracking-tight">Recent Reviews (Moderation)</h2>
-                    <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-xl overflow-hidden shadow-sm">
-                        {feedbacks.length === 0 ? (
-                            <div className="p-8 text-center text-muted-foreground">
-                                No reviews found in the system.
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-border">
-                                {feedbacks.map((feedback: any) => (
-                                    <AdminReviewItem key={feedback.id} feedback={feedback} />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="mt-12">
                     <h2 className="text-xl font-semibold mb-4 tracking-tight">Withdrawal Requests</h2>
                     <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-xl overflow-hidden shadow-sm">
                         {withdrawals.length === 0 ? (
@@ -86,6 +69,23 @@ export default async function AdminDashboardPage() {
                             <div className="divide-y divide-border">
                                 {withdrawals.map((withdrawal: any) => (
                                     <AdminWithdrawalItem key={withdrawal.id} withdrawal={withdrawal} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="mt-12">
+                    <h2 className="text-xl font-semibold mb-4 tracking-tight">Recent Reviews (Moderation)</h2>
+                    <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-xl overflow-hidden shadow-sm">
+                        {feedbacks.length === 0 ? (
+                            <div className="p-8 text-center text-muted-foreground">
+                                No reviews found in the system.
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-border">
+                                {feedbacks.map((feedback: any) => (
+                                    <AdminReviewItem key={feedback.id} feedback={feedback} />
                                 ))}
                             </div>
                         )}
